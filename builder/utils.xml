@@ -1,0 +1,441 @@
+<project basedir="..">
+	<target name="copyCommon" depends="jslint, csslint">
+		<copy todir="${distDir}">
+			<fileset dir="${commonDir}">
+				<include name="**/**" />
+				<exclude name="**/_*/**" />
+			</fileset>
+		</copy>
+	</target>
+
+	<taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask" classpath="${basedir}/builder/xmltask.jar"/>
+
+	<target name="copyApp" depends="git.revision">
+		<copy todir="${distDir}">
+			<fileset dir="${appDir}">
+				<include name="**/**" />
+				<exclude name="**/.*" />
+				<exclude name="**/.*/**" />
+				<exclude name="**/_*/**" />
+				<exclude name="**/build.xml" />
+			</fileset>
+		</copy>
+
+		<script language="javascript">
+			var startTimestamp = new Date(2013, 9, 1).getTime();
+			var currentDate = new Date();
+			var currentTimestamp = currentDate.getTime();
+
+			var dayNumber = Math.floor((currentTimestamp - startTimestamp) / 1000 / 60 / 60 / 24);
+			var sprintNumber = Math.ceil(dayNumber / 14);
+			var sprintDayNumber = dayNumber % 14;
+
+			var revisionNumber = (currentDate.getHours() * 60 + currentDate.getMinutes()) * 6 + Math.floor(currentDate.getSeconds() / 10);
+
+			project.setProperty("application.version", sprintNumber + "." + sprintDayNumber + "." + revisionNumber);
+		</script>
+
+		<echo message="Setting application version to: v. ${application.version} rev. ${repository.version}" />
+		<xmltask source="${appDir}/config.xml" dest="${distDir}/config.xml" report="false">
+			<replace path="/:widget/@version" withText="${application.version}" />
+		</xmltask>
+		<replace file="${distDir}/css/car/components/settings/js/settings.js" token="@revision@" value="${repository.version}" />
+	</target>
+
+	<target name="jsLintCheckCount" if="jslint">
+		<resourcecount property="filesToJslint">
+			<fileset dir="${appDir}/">
+				<include name="**/*.js" />
+				<exclude name="**/.*/**" />
+				<exclude name="**/jquery*.js" />
+				<exclude name="**/jsrender*.js" />
+				<exclude name="**/knockout.js" />
+				<exclude name="**/ace.js" />
+				<exclude name="**/mode-javascript.js" />
+				<exclude name="**/theme-ambiance.js" />
+				<exclude name="**/worker-javascript.js" />
+				<exclude name="**/tween*.js" />
+				<exclude name="**/async.js" />
+				<exclude name="**/moment.min.js" />
+				<exclude name="**/api-connman.js" />
+				<exclude name="**/websocket.js" />
+				<exclude name="**/uri.js" />
+			</fileset>
+		</resourcecount>
+		<condition property="doJsLint">
+			<and>
+				<not>
+					<equals arg1="${filesToJslint}" arg2="0" />
+				</not>
+				<not>
+					<equals arg1="${appDir}" arg2="${basedir}/applications/smartdevicelink" />
+				</not>
+			</and>
+		</condition>
+	</target>
+
+	<taskdef name="jshint" classname="com.philmander.jshint.JsHintAntTask" classpath="${basedir}/builder/ant-jshint-0.3.6.jar" />
+
+	<target name="jslint" depends="jsLintCheckCount" if="doJsLint" >
+		<jshint dir="${appDir}" includes="**/*.js" fail="false"
+  			    options="noempty=true,bitwise=true,immed=true,curly=true,eqeqeq=true,forin=true,latedef=true,newcap=true,nonew=true,noarg=true,strict=true,trailing=true,undef=true,browser=true,jquery=true,devel=true,camelcase=true" 
+  			    globals="tizen=false">
+			<exclude name="**/_*/**" />
+			<exclude name="**/.*/**" />
+			<exclude name="**/jquery*.js" />
+			<exclude name="**/jsrender*.js" />
+			<exclude name="**/knockout.js" />
+			<exclude name="**/ace.js" />
+			<exclude name="**/mode-javascript.js" />
+			<exclude name="**/theme-ambiance.js" />
+			<exclude name="**/worker-javascript.js" />
+			<exclude name="**/tween*.js" />
+			<exclude name="**/async.js" />
+			<exclude name="**/moment.min.js" />
+			<exclude name="**/api-connman.js" />
+			<exclude name="**/websocket.js" />
+			<exclude name="**/uri.js" />
+			<report type="xml" destFile="${buildResultsDir}/jshintresults.xml" />
+		</jshint>
+		<xslt in="${buildResultsDir}/jshintresults.xml" out="${buildResultsDir}/jslintresults.xml" style="${basedir}/builder/jshint2checkstyle.xslt" />
+	</target>
+
+	<!-- <taskdef name="jslint" classname="com.googlecode.jslint4java.ant.JSLintTask" classpath="${basedir}/builder/jslint4java-2.0.5.jar">
+	</taskdef>
+
+	<target name="jslint" depends="copyCommon, copyApp" if="jslint">
+		<jslint haltonfailure="false" options="browser,debug,devel,eqeq,plusplus,predef,white,windows">
+			<predef>jQuery,$$,tizen</predef>
+			<formatter type="checkstyle" destfile="${buildResultsDir}/jslintresults.xml" />
+			<fileset dir="${distDir}">
+				<include name="**/*.js" />
+			</fileset>
+		</jslint>
+	</target> -->
+
+	<target name="csslintCheckCount" if="csslint">
+		<resourcecount property="filesToCsslint">
+			<fileset dir="${appDir}/">
+				<include name="**/*.css" />
+				<exclude name="**/_*/**" />
+				<exclude name="**/.*/**" />
+			</fileset>
+		</resourcecount>
+		<condition property="doCssLint">
+			<and>
+				<not>
+					<equals arg1="${filesToCsslint}" arg2="0" />
+				</not>
+				<not>
+					<equals arg1="${appDir}" arg2="${basedir}/applications/smartdevicelink" />
+				</not>
+			</and>
+		</condition>
+	</target>
+
+	<target name="csslint" depends="csslintCheckCount" if="doCssLint">
+		<echo message="Csslint ${filesToCsslint} file(s)." />
+		<apply executable="java" parallel="true" failonerror="false" output="${buildResultsDir}/csslintresults.xml">
+			<fileset dir="${appDir}/">
+				<include name="**/*.css" />
+				<exclude name="**/_*/**" />
+				<exclude name="**/.*/**" />
+			</fileset>
+			<arg line="-jar" />
+			<arg path="${basedir}/builder/js.jar" />
+			<arg path="${basedir}/builder/csslint-rhino.js" />
+			<arg line="--format=checkstyle-xml" />
+			<arg line="--ignore=adjoining-classes,box-sizing,compatible-vendor-prefixes,ids,import,important,universal-selector,vendor-prefix,box-model,duplicate-background-images" />
+			<srcfile />
+		</apply>
+	</target>
+
+	<target name="checkAppTestRunner" if="unitTest">
+		<available file="${appDir}/_tests/testRunner.js" property="testRunnerExists" />
+	</target>
+
+	<target name="runUnitTest" depends="checkAppTestRunner" if="testRunnerExists">
+		<loadfile property="specRunnerTemplate" srcfile="${basedir}/builder/unitTesting/jasmine/SpecRunnerTemplate.html" />
+		<script language="javascript">
+			var basedirConverted,
+				specRunnerFile,
+				appDir;
+
+			basedirConverted = project.getProperty("basedir");
+			basedirConverted = basedirConverted.replace('\\', '/');
+			project.setProperty("basedirConverted", basedirConverted);
+			
+			specRunnerFile = project.getProperty("specRunnerTemplate");
+			appDir = project.getProperty("appDir");
+			specRunnerFile = specRunnerFile.replace('$appDir$', appDir);
+			project.setProperty("specRunnerFile", specRunnerFile);
+		</script>
+		<echo file="${basedir}/builder/unitTesting/jasmine/SpecRunner.html" append="false">${specRunnerFile}
+		</echo>
+
+		<exec dir="${buildResultsDir}/" executable="${basedir}/builder/unitTesting/phantomjs-1.9.2-windows/phantomjs.exe" failonerror="true" osfamily="windows">
+			<arg line="${basedir}\builder\unitTesting\jasmine\run-jasmine.js" />
+			<arg line="${basedirConverted}/builder/unitTesting/jasmine/SpecRunner.html" />
+		</exec>
+		<exec dir="${buildResultsDir}/" executable="phantomjs" failonerror="true" osfamily="unix">
+			<arg line="${basedir}/builder/unitTesting/jasmine/run-jasmine.js" />
+			<arg line="${basedir}/builder/unitTesting/jasmine/SpecRunner.html" />
+		</exec>
+	</target>
+
+	<target name="sign" depends="copyCommon, copyApp, runUnitTest">
+		<exec dir="${distDir}" executable="cmd" osfamily="windows" failonerror="true">
+			<arg line="/c ${tools}web-signing -l info -n -p test:${profileFile}" />
+		</exec>
+		<exec dir="${distDir}" executable="sh" osfamily="unix" failonerror="true">
+			<arg line="${tools}web-signing -l info -n -p test:${profileFile}" />
+		</exec>
+	</target>
+
+	<target name="package" depends="sign">
+		<exec dir="${distDir}" executable="cmd" osfamily="windows" failonerror="true">
+			<arg line="/c ${tools}web-packaging -l info -n ${appId}.wgt" />
+		</exec>
+		<exec dir="${distDir}" executable="sh" osfamily="unix" failonerror="true">
+			<arg line="${tools}web-packaging -l info -n ${appId}.wgt" />
+		</exec>
+	</target>
+
+	<target name="deploy" depends="buildApp">
+		<echo message="Looking for connected device ..." />
+		<exec dir="${distDir}" executable="cmd" osfamily="windows" outputproperty="sdbGetState">
+			<arg line="/c ${sdb} get-state" />
+		</exec>
+		<exec dir="${distDir}" executable="${sdb}" osfamily="unix" outputproperty="sdbGetState">
+			<arg line="get-state" />
+		</exec>
+
+		<condition property="sdbConnected">
+			<or>
+				<equals arg1="${sdbGetState}" arg2="device" casesensitive="false" trim="true" />
+				<equals arg1="${sdbGetState}" arg2="emulator" casesensitive="false" trim="true" />
+			</or>
+		</condition>
+
+		<fail message="SDB is not connected. Please use command '${sdb} connect' to connect to remote system first." unless="sdbConnected" />
+
+		<echo message="Setting root access ..." />
+		<exec dir="${distDir}" executable="cmd" osfamily="windows">
+			<arg line="/c ${sdb} root on" />
+		</exec>
+		<exec dir="${distDir}" executable="${sdb}" osfamily="unix">
+			<arg line="root on" />
+		</exec>
+
+		<echo message="Killing running application ..." />
+		<exec dir="${distDir}" executable="cmd" osfamily="windows">
+			<arg line="/c ${sdb} shell wrt-launcher -k ${appId}" />
+		</exec>
+		<exec dir="${distDir}" executable="${sdb}" osfamily="unix">
+			<arg line="shell wrt-launcher -k ${appId}" />
+		</exec>
+
+		<echo message="Uninstalling previous version ..." />
+		<exec dir="${distDir}" executable="cmd" osfamily="windows">
+			<arg line="/c ${sdb} shell wrt-installer -un ${appId}" />
+		</exec>
+		<exec dir="${distDir}" executable="${sdb}" osfamily="unix">
+			<arg line="shell wrt-installer -un ${appId}" />
+		</exec>
+
+		<echo message="Deploying new version (this can take couple of seconds) ..." />
+		<exec dir="${distDir}" executable="cmd" osfamily="windows">
+			<arg line="/c ${sdb} push ${appDir}/_dist/${appId}.wgt /opt/usr/apps/tmp" />
+		</exec>
+		<exec dir="${distDir}" executable="${sdb}" osfamily="unix">
+			<arg line="push ${appDir}/_dist/${appId}.wgt /opt/usr/apps/tmp" />
+		</exec>
+
+		<echo message="Installing new version ..." />
+		<exec dir="${distDir}" executable="cmd" osfamily="windows" failonerror="true">
+			<arg line="/c ${sdb} shell wrt-installer -i /opt/usr/apps/tmp/${appId}.wgt" />
+		</exec>
+		<exec dir="${distDir}" executable="${sdb}" osfamily="unix" failonerror="true">
+			<arg line="shell wrt-installer -i /opt/usr/apps/tmp/${appId}.wgt" />
+		</exec>
+	</target>
+
+	<target name="run" depends="deploy">
+		<echo message="Running application in normal mode ..." />
+		<exec dir="${distDir}" executable="cmd" osfamily="windows">
+			<arg line="/c ${tools}web-run -i ${appId}" />
+		</exec>
+		<exec dir="${distDir}" executable="${tools}web-run" osfamily="unix">
+			<arg line="-i ${appId}" />
+		</exec>
+	</target>
+
+	<target name="debug" depends="deploy">
+		<echo message="Running application in debug mode ..." />
+		<exec dir="${distDir}" executable="cmd" osfamily="windows" outputproperty="out">
+			<arg line="/c ${tools}web-debug -t 5 -i ${appId}" />
+		</exec>
+		<exec dir="${distDir}" executable="${tools}web-debug" osfamily="unix" outputproperty="out">
+			<arg line="-i ${appId}" />
+		</exec>
+
+		<echo message="${out}" />
+
+		<script language="javascript">
+			var out, 
+				temp;
+
+			out = project.getProperty("out");
+			temp = out.split("URL: ");
+			if (temp.length == 1) {
+				temp = out.split("device: ");
+			}
+			temp = temp[1].split(" ");
+			out = temp[0];
+			project.setProperty("out", out);
+		</script>
+		<condition property="isOnline">
+			<isreachable url="${out}" />
+		</condition>
+		<antcall target="startDebugConsole" />
+	</target>
+
+	<target name="startDebugConsole" if="${isOnline}">
+		<echo message="${out}" />
+		<exec dir="${distDir}" executable="${chrome}">
+			<arg line="--new-window ${out}" />
+		</exec>
+	</target>
+
+	<target name="buildApp" depends="setApp">
+		<antcall target="cleanAppDir" />
+		<antcall target="package" />
+	</target>
+
+	<target name="testConfig">
+		<available file="${basedir}/builder/buildCfg.xml" property="configFile" />
+	</target>
+
+	<target name="loadConfig" if="${configFile}" depends="testConfig">
+		<xmlproperty file="${basedir}/builder/buildCfg.xml" />
+		<echo message="Custom config file loaded." />
+	</target>
+
+	<target name="loadDefaultConfig" unless="${configFile}" depends="loadConfig">
+		<echo message="Config file not foud trying load default config..." />
+		<available file="${basedir}/builder/buildCfg_default.xml" property="defaultConfigFile" />
+		<fail message="Can't find any config file!" unless="${defaultConfigFile}" />
+		<xmlproperty file="${basedir}/builder/buildCfg_default.xml" />
+		<echo message="Default config file loaded." />
+	</target>
+
+	<target name="config" depends="loadDefaultConfig">
+		<condition property="toolsAvailable">
+			<or>
+				<available file="${config.ideTools(path)}web-debug.bat" />
+				<available file="${config.ideTools(path)}web-debug" />
+			</or>
+		</condition>
+		<echo message="Checking Tizen IDE tools directory: ${config.ideTools(path)}" />
+		<fail message="Tizen IDE tools are not available! Try check your configuration file ( builder/buildCfg.xml  OR  builder/buildCfg_default.xml). Instructios are here: https://github.com/IxonosKosice/intel-ivi-poc/wiki/Build-and-debug-via-ant" unless="${toolsAvailable}" />
+		<property name="tools" value="${config.ideTools(path)}" />
+
+		<property name="profileFile" value="${basedir}/${config.profile(path)}" />
+
+		<echo message="Checking profile file: ${profileFile}" />
+		<available file="${profileFile}" property="profileFileAvailable" />
+		<fail message="Profile file is not available! Try check your configuration file ( builder/buildCfg.xml  OR  builder/buildCfg_default.xml ). Instructios are here: https://github.com/IxonosKosice/intel-ivi-poc/wiki/Build-and-debug-via-ant" unless="${profileFileAvailable}" />
+
+		<echo message="Checking SDB shell executable: ${config.sdbShell(path)}" />
+		<condition property="sdbAvailable">
+			<or>
+				<available file="${config.sdbShell(path)}.exe" />
+				<available file="${config.sdbShell(path)}" />
+			</or>
+		</condition>
+		<fail message="SDB shell is not available! Try check your configuration file ( builder/buildCfg.xml  OR  builder/buildCfg_default.xml ). Instructios are here: https://github.com/IxonosKosice/intel-ivi-poc/wiki/Build-and-debug-via-ant" unless="${sdbAvailable}" />
+		<property name="sdb" value="${config.sdbShell(path)}" />
+
+		<echo message="Checking Chrome browser executable: ${config.chrome(path)}" />
+		<condition property="chromeAvailable">
+			<or>
+				<available file="${config.chrome(path)}.exe" />
+				<available file="${config.chrome(path)}" />
+			</or>
+		</condition>
+		<fail message="Chrome browser is not available! Try check your configuration file ( builder/buildCfg.xml  OR  builder/buildCfg_default.xml ). Instructios are here: https://github.com/IxonosKosice/intel-ivi-poc/wiki/Build-and-debug-via-ant" unless="${chromeAvailable}" />
+		<property name="chrome" value="${config.chrome(path)}" />
+	</target>
+
+	<target name="setApp" depends="config, git.revision">
+		<condition property="configAvailable">
+			<available file="${appDir}/config.xml" />
+		</condition>
+
+		<fail message="Application wasn't selected. If you'd like to perform operation (e.g. deploy) on all applications please run task deployAll" unless="${configAvailable}" />
+
+		<property name="distDir" value="${appDir}/_dist" />
+		<xmlproperty file="${appDir}/config.xml" />
+		<property name="appId" value="${widget.tizen:application(id)}" />
+		<property name="buildResultsDir" value="${appDir}/_buildResults" />
+		<mkdir dir="${buildResultsDir}" />
+	</target>
+
+	<target name="cleanAppDir">
+		<delete includeemptydirs="true" failonerror="false">
+			<fileset dir="${distDir}">
+			</fileset>
+		</delete>
+		<delete failonerror="false">
+			<fileset dir="${buildResultsDir}">
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="clean" depends="setApp">
+		<antcall target="cleanAppDir" />
+	</target>
+
+	<available file=".git" type="dir" property="git.present"/>
+
+	<target name="git.revision" description="Store git revision in ${repository.version}" if="git.present">
+		<exec executable="git" outputproperty="git.revision" failifexecutionfails="false" errorproperty="">
+			<arg value="rev-parse"/>
+			<arg value="--short"/>
+			<arg value="HEAD"/>
+		</exec>
+		<condition property="repository.version" value="${git.revision}" else="unknown">
+			<and>
+				<isset property="git.revision"/>
+				<length string="${git.revision}" trim="yes" length="0" when="greater"/>
+			</and>
+		</condition>
+	</target>
+
+	<target name="generateJavascriptDocumentation">
+		<exec dir="${basedir}" executable="cmd" osfamily="windows" failonerror="true">
+			<arg line="/c yuidoc -c ./builder/yuidoc.json -N applications" />
+		</exec>
+		<exec dir="${basedir}" executable="/usr/local/bin/yuidoc" osfamily="unix" failonerror="true">
+			<arg line="-c ./builder/yuidoc.json -N applications" />
+		</exec>
+	</target>
+
+	<target name="generatePackageServerDocumentation">
+		<exec dir="${basedir}" executable="cmd" osfamily="windows" failonerror="true">
+			<arg line="/c yuidoc -c ./builder/package_server_yuidoc.json -N ./package_server/src" />
+		</exec>
+		<exec dir="${basedir}" executable="/usr/local/bin/yuidoc" osfamily="unix" failonerror="true">
+			<arg line="-c ./builder/package_server_yuidoc.json -N ./package_server/src" />
+		</exec>
+	</target>
+
+	<target name="generateNativeDocumentation">
+		<exec dir="${basedir}/native/" executable="${basedir}/builder/doxygen/doxygen.exe" osfamily="windows" failonerror="true">
+			<arg line="Doxyfile" />
+		</exec>
+		<exec dir="${basedir}/native/" executable="doxygen" osfamily="unix" failonerror="true">
+			<arg line="Doxyfile" />
+		</exec>
+	</target>
+</project>

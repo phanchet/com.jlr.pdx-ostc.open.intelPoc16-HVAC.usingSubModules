@@ -1,0 +1,28 @@
+<project name="jlr-tizen-ivi-browser" default="buildAll" basedir=".">
+	<property name="commonDir" value="${basedir}/../_common" />
+	<import file="${basedir}/builder/utils.xml" />
+
+	<target name="buildAll" description="Builds all listed applications.">
+		<antcall target="lintCommon" />
+		<antcall target="buildHvac" />
+	</target>
+
+	<target name="lintCommon" description="jsHint and csslint for common files">
+		<property name="appDir" value="${basedir}/applications/_common"/>
+		<property name="buildResultsDir" value="${appDir}/_buildResults" />
+		<mkdir dir="${buildResultsDir}" />
+		<antcall target="jslint" />
+		<antcall target="csslint" />
+	</target>
+
+	<target name="cleanHvac" description="Clean HVAC application _dist folder.">
+		<property name="appDir" value="${basedir}/applications/hvac" />
+		<antcall target="clean" />
+	</target>
+
+	<target name="buildHvac" description="Build HVAC application.">
+		<property name="appDir" value="${basedir}/applications/hvac" />
+		<antcall target="buildApp" />
+	</target>
+
+</project>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles version="version">
+	<profile name="test">
+		<profileitem ca="C:\tizen-sdk\tools\certificate-generator\certificates\developer\tizen-developer-ca.cer"
+                   author="true" 
+                   key="C:\tizen-sdk\tools\certificate-generator\partnerSign.p12" 
+                   password="NkRAceRKP4k=" rootca=""/>
+		<profileitem ca="C:\tizen-sdk\tools\certificate-generator\certificates\distributor\tizen-distributor-ca.cer" 
+                   distributor="0"
+                   key="C:\tizen-sdk\tools\certificate-generator\certificates\distributor\tizen-distributor-signer.p12"
+                   password="Vy63flx5JBMc5GA4iEf8oFy+8aKE7FX/+arrDcO4I5k=" rootca=""/>      
+		<profileitem ca="" distributor="3" key="" password="xmEcrXPl1ss=" rootca=""/>
+	</profile>
+</profiles>

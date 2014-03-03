@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <ideTools path="c:/tizen-sdk/tools/ide/bin/" />
+    <sdbShell path="c:/tizen-sdk/tools/sdb" />
+    <chrome path="c:/Program Files (x86)/Google/Chrome/Application/chrome" />
+    <profile path="builder/profiles_example.xml" />
+</config>
