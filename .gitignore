@@ -17,3 +17,4 @@ builder/profiles.xml
 /docs/apps/**
 *.d
 *.o
+.idea/
