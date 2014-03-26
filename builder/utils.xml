@@ -10,13 +10,15 @@
 
 	<taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask" classpath="${basedir}/builder/xmltask.jar"/>
 
+    <!-- TODO: this still leaves the Makefile in the wgt file, it should be removed. -->
 	<target name="copyApp" depends="git.revision">
 		<copy todir="${distDir}">
 			<fileset dir="${appDir}">
 				<include name="**/**" />
 				<exclude name="**/.*" />
 				<exclude name="**/.*/**" />
-				<exclude name="**/_*/**" />
+				<exclude name="**/_dist/**" />
+                <exclude name="**/_buildResults/**" />
 				<exclude name="**/build.xml" />
 			</fileset>
 		</copy>
