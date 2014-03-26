@@ -1,0 +1,3 @@
+[submodule "applications/hvac/_common"]
+	path = applications/hvac/_common
+	url = ssh://phanchet@git/home/phanchet/repos/com.jlr.pdx-ostc.open.All-IntelPoc-Apps._common.subModule.git
