@@ -1,6 +1,6 @@
 [submodule "applications/hvac/_common"]
 	path = applications/hvac/_common
-	url = ssh://git/home/phanchet/repos/com.jlr.pdx-ostc.open.All-IntelPoc-Apps._common.subModule.git
+	url = ssh://git/home/phanchet/sandbox/com.jlr.pdx-ostc.open.All-IntelPoc-Apps._common.subModule.git
 [submodule "builder"]
 	path = builder
-	url = ssh://git/home/phanchet/repos/com.jlr.pdx-ostc.open.All-IntelPoc-Apps.builder.subModule.git
+	url = ssh://git/home/phanchet/sandbox/com.jlr.pdx-ostc.open.All-IntelPoc-Apps.builder.subModule.git
