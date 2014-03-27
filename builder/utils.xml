@@ -10,7 +10,7 @@
 
 	<taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask" classpath="${basedir}/builder/xmltask.jar"/>
 
-    <!-- TODO: this still leaves the Makefile in the wgt file, it should be removed. -->
+    <!-- TODO: this still leaves the Makefile in the wgt file, the Makefile in the wgt should be removed. -->
 	<target name="copyApp" depends="git.revision">
 		<copy todir="${distDir}">
 			<fileset dir="${appDir}">
@@ -18,7 +18,7 @@
 				<exclude name="**/.*" />
 				<exclude name="**/.*/**" />
 				<exclude name="**/_dist/**" />
-                <exclude name="**/_buildResults/**" />
+                <exclude name="**/_buildResults" />
 				<exclude name="**/build.xml" />
 			</fileset>
 		</copy>
@@ -380,7 +380,9 @@
 		<xmlproperty file="${appDir}/config.xml" />
 		<property name="appId" value="${widget.tizen:application(id)}" />
 		<property name="buildResultsDir" value="${appDir}/_buildResults" />
-		<mkdir dir="${buildResultsDir}" />
+		<!-- <mkdir dir="${buildResultsDir}" />
+        <echo message="==================> Just created directory ${buildResultsDir}"/>
+        -->
 	</target>
 
 	<target name="cleanAppDir">

@@ -1,5 +1,6 @@
 <project name="jlr-tizen-ivi-browser" default="buildAll" basedir=".">
-	<property name="commonDir" value="${basedir}/../_common" />
+    <property name="appDir" value="${basedir}/applications/hvac" />
+    <property name="commonDir" value="${appDir}/_common" />
 	<import file="${basedir}/builder/utils.xml" />
 
 	<target name="buildAll" description="Builds all listed applications.">
@@ -16,7 +17,6 @@
 	</target>
 
 	<target name="cleanHvac" description="Clean HVAC application _dist folder.">
-		<property name="appDir" value="${basedir}/applications/hvac" />
 		<antcall target="clean" />
 	</target>
 
