@@ -1,4 +1,15 @@
+<!--
+*
+*   The file buildCfg_default.xml in the builder (this) directory defines where to find
+*   tools used by this script.
+*
+*   As an alternative, these definitions can be placed in .buildCfg.xml located in the
+*   user's home directory (indicated by the environment variable HOME on both Linux
+*   and Windows.
+*
+-->
 <project basedir="..">
+    <property environment="env"/>
 	<target name="copyCommon" depends="jslint, csslint">
 		<copy todir="${distDir}">
 			<fileset dir="${commonDir}">
@@ -315,12 +326,21 @@
 	</target>
 
 	<target name="testConfig">
-		<available file="${basedir}/builder/buildCfg.xml" property="configFile" />
+        <condition property="configFile">
+            <or>
+                <available file="${basedir}/builder/buildCfg.xml" property="projectConfigFile" />
+                <available file="${env.HOME}/.buildCfg.xml" property="homeConfigFile" />
+            </or>
+        </condition>
+        <echo message="configFile is  ${configFile} home is ${env.HOME}" />
 	</target>
 
 	<target name="loadConfig" if="${configFile}" depends="testConfig">
-		<xmlproperty file="${basedir}/builder/buildCfg.xml" />
-		<echo message="Custom config file loaded." />
+        <echo message="Trying to load config file..." />
+        <!-- Local buildCfg.xml will take precedence over the one in home (if present) -->
+        <xmlproperty file="${env.HOME}/.buildCfg.xml" />
+        <xmlproperty file="${basedir}/builder/buildCfg.xml" />
+        <echo message="Custom config file loaded." />
 	</target>
 
 	<target name="loadDefaultConfig" unless="${configFile}" depends="loadConfig">
