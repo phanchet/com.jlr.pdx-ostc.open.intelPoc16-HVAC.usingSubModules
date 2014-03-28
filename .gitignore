@@ -18,3 +18,5 @@ builder/profiles.xml
 *.d
 *.o
 .idea/
+*~
+
