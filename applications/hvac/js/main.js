@@ -8,6 +8,7 @@
  */
 
 /*global Bootstrap, hvacControler*/
+var debug = false;
 
 /**
  * Heat, Ventilation and Air Conditioning provides UI controls to operate this subystem of the car from 
@@ -119,7 +120,9 @@ var init = function() {
 						break;
 					}
 				}
+				// -- This is about updating the indicator and I wonder if it's the right way to do it...
 				bootstrap.carIndicator.setStatus("targetTemperatureLeft", ($(this).val() + 29) - ($(this).val() * 2));
+				// -- This is setting the can bus hardware and is the correct name for the T5 plugins...
 				bootstrap.carIndicator.setStatus("FrontTSetLeftCmd", ($(this).val() + 29) - ($(this).val() * 2));
 			}
 		});
@@ -138,7 +141,7 @@ var init = function() {
 		});
 
 		$(".noUiSliderFan").noUiSlider({
-			range : [ 0, 8 ],
+			range : [ 0, 7 ],   // Even though this is defined as 4 bits the car does 0..7
 			step : 1,
 			start : 0,
 			handles : 1,
@@ -146,10 +149,7 @@ var init = function() {
 			orientation : "horizontal",
 			slide : function() {
 				bootstrap.carIndicator.setStatus("fanSpeed", $(this).val());
-
-				if ($(this).val() > 0 && $(this).val() < 9) {
-					bootstrap.carIndicator.setStatus("FrontBlwrSpeedCmd", ($(this).val() * 2) - 1);
-				}
+				bootstrap.carIndicator.setStatus("FrontBlwrSpeedCmd", ($(this).val()));
 			}
 		});
 
@@ -199,6 +199,10 @@ var init = function() {
  **/
 $(function() {
 	"use strict";
-	// debug mode - window.setTimeout("init()", 20000);
-	init();
+	// debug mode -
+	if (!debug) {
+		init()
+	} else {
+		window.setTimeout("init()", 20000);
+	}
 });
