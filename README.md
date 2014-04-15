@@ -94,6 +94,39 @@ ssh: host ("ssh://git/home/phanchet/sandbox/myrepo").  Hostname is the real DNS 
 Consult [this article](http://nerderati.com/2011/03/simplify-your-life-with-an-ssh-config-file/) for a brief explanation 
 of setting up your ssh config file.
 
+## THINGS TO REMEMBER when working with GIT ##
+Whenever you do a push or a pull (or any operation that includes push or pull as part of the action), it happens on the **current branch**.
+The "current branch" is either a default (master or undefined, in the case of a subrepository), or one that you explicitly set via *checkout* or *branch*. 
+
+To see the remotes that are set up for your repository, cd into the repository and issue 
+
+	**git remote -v**
+
+Consult documentation to see how to add remotes to your repository.
+
+When you push *to* a repository, you need to *specify* what branch you want to push to (what you push *from* will be the current branch!)
+
+When you pull *from* a remote repository you need to specify what branch you want to pull from-- What ever you pull will be merged 
+to your current branch.  If you don't double check, you may be surprised by the result!
+
+To find out the branches available from a remote, do
+
+	git remote show <remote_name>
+
+which will display something like this:
+
+		$ git remote show origin
+		* remote origin
+		  URL: git://github.com/schacon/ticgit.git
+		  Remote branch merged with 'git pull' while on branch master
+			master
+		  Tracked remote branches
+			master
+			ticgit
+
+See this article [Git Basics - Working with Remotes](http://git-scm.com/book/ch2-5.html) for more information.
+
+
 ## Configuring the build system ##
 There is a file buildCfg_default.xml contained in the builder directory.  This file can be renamed to .builder.xml
 and moved to the user's home directory (pointed to by the environment variable HOME).  From there, it can be shared
